@@ -2,49 +2,51 @@ import numpy as np
 import pandas as pd
 
 filename = 'train.csv'
+train_set_ratio = 0.8
 
 df = pd.read_csv(filename)
 school = pd.get_dummies(df.school)
-#print(school)
 sex = pd.get_dummies(df.sex)
-#print(sex)
 age = df.age
-#print(age)
 famsize = pd.get_dummies(df.famsize)
-#print(famsize)
 studytime = df.studytime
-#print(studytime)
 failures = df.failures
-#print(failures)
 activities = pd.get_dummies(df.activities)
-#print(activities)
 higher = pd.get_dummies(df.higher)
-#print(higher)
 internet = pd.get_dummies(df.internet)
-#print(internet)
 romantic = pd.get_dummies(df.romantic)
-#print(romantic)
 famrel = df.famrel
-#print(famrel)
 freetime = df.freetime
-#print(freetime)
 goout = df.goout
-#print(goout)
 Dalc = df.Dalc
-#print(Dalc)
 Walc = df.Walc
-#print(Walc)
 health = df.health
-#print(health)
 absences = df.absences
-#print(absences)
 G3 = df.G3
 
 res = pd.concat([school, sex, age, famsize, studytime, failures, activities, higher, internet, romantic, famrel, freetime, goout, Dalc, Walc, health, absences], axis=1)
-#print(res)
 x = np.array(res)
-print(x)
-#y = np.array(G3)
-#print(y)
+y = np.array(G3)
 
+train_set_num = int(np.size(x, 0)*train_set_ratio)
 
+## training set (unnormalized)
+x_train = x[0:train_set_num-1]
+y_train = y[0:train_set_num-1]
+
+## test set (unnormalized)
+x_test = x[train_set_num:]
+y_test = y[train_set_num:]
+
+x_train_mean = np.mean(x_train, axis = 0)
+x_train_std = np.std(x_train, axis = 0)
+x_train_normalized = (x_train - x_train_mean) / x_train_std
+x_test_normalized = (x_test - x_train_mean) / x_train_std
+
+y_train_mean = np.mean(y_train, axis = 0)
+y_train_std = np.std(y_train, axis = 0)
+y_train_normalized = (y_train - y_train_mean) / y_train_std
+y_test_normalized = (y_test - y_train_mean) / y_train_std
+
+print(x_test_normalized)
+print(y_test_normalized)
