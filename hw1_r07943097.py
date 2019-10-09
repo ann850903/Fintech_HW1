@@ -4,6 +4,9 @@ import pandas as pd
 filename = 'train.csv'
 train_set_ratio = 0.8
 
+def rmse(predictions, targets):
+    return np.sqrt(np.mean((predictions-targets)**2))
+
 df = pd.read_csv(filename)
 school = pd.get_dummies(df.school)
 sex = pd.get_dummies(df.sex)
@@ -48,5 +51,7 @@ y_train_std = np.std(y_train, axis = 0)
 y_train_normalized = (y_train - y_train_mean) / y_train_std
 y_test_normalized = (y_test - y_train_mean) / y_train_std
 
-print(x_test_normalized)
-print(y_test_normalized)
+w_unbiased = np.dot(np.linalg.pinv(x_train_normalized), y_train_normalized)
+y_test_predict_unbiased = np.dot(x_test_normalized, w_unbiased)
+
+print("RMSE: ", rmse(y_test_predict_unbiased, y_test_normalized))
