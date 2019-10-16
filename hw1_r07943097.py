@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-#from sklearn.linear_model import Ridge
 
 filename = 'train.csv'
 training_set_ratio = 0.8
 alpha = 1
+lambDa = 1
 
 def rmse(predictions, targets):
     return np.sqrt(np.mean((predictions-targets)**2))
@@ -33,15 +33,15 @@ res = pd.concat([school, sex, age, famsize, studytime, failures, activities, hig
 x = np.array(res)
 y = np.array(G3)
 
-train_set_num = int(np.size(x, 0)*training_set_ratio)
+training_set_num = int(np.size(x, 0)*training_set_ratio)
 
 ## training set (unnormalized)
-x_train = x[0:train_set_num-1]
-y_train = y[0:train_set_num-1]
+x_train = x[0:training_set_num-1]
+y_train = y[0:training_set_num-1]
 
 ## test set (unnormalized)
-x_test = x[train_set_num:]
-y_test = y[train_set_num:]
+x_test = x[training_set_num:]
+y_test = y[training_set_num:]
 
 ## calculate column-wise mean and standard-deviation
 x_train_mean = np.mean(x_train, axis = 0)
@@ -60,14 +60,26 @@ x_train_biased = np.column_stack((np.ones(len(y_train)),x_train))
 x_test_biased = np.column_stack((np.ones(len(y_test)),x_test))
 
 ## linear regression model without the bias term
-w_unbiased = np.dot(np.linalg.pinv(x_train), y_train)
-y_test_predict_linear = np.dot(x_test, w_unbiased)
-#print("RMSE: ", rmse(y_test_predict_linear, y_test))
+w_linear = np.dot(np.linalg.pinv(x_train), y_train)
+y_test_predict_linear = np.dot(x_test, w_linear)
+#print("RMSE_linear: ", rmse(y_test_predict_linear, y_test))
 
-## Bayesian linear regression with the bias term
-Xtranspose = x_train_biased.transpose()
-Identity = np.identity(len(x_train_biased[1,:]))
-Identity[0,0] = 0
-w_Bayesian = np.dot(np.linalg.inv(np.add(np.dot(Xtranspose,x_train_biased),alpha*Identity)),np.dot(Xtranspose,y_train))
-y_test_predict_Bayesian = np.dot(x_test_biased, w_Bayesian)
-#print("RMSE: ", rmse(y_test_predict_Bayesian, y_test))
+## regularized linear regression model without the bias term
+x_transpose = x_train.transpose()
+Identity = np.identity(len(x_train[1,:]))
+w_regularized = np.dot(np.linalg.inv(np.add(np.dot(x_transpose,x_train),lambDa*Identity)),np.dot(x_transpose,y_train))
+y_test_predict_regularized = np.dot(x_test, w_regularized)
+#print("RMSE_regularized: ", rmse(y_test_predict_regularized, y_test))
+
+## regularized linear regression model with the bias term
+x_transpose_biased = x_train_biased.transpose()
+Identity_biased = np.identity(len(x_train_biased[1,:]))
+Identity_biased[0,0] = 0
+w_regularized_biased = np.dot(np.linalg.inv(np.add(np.dot(x_transpose_biased,x_train_biased),lambDa*Identity_biased)),np.dot(x_transpose_biased,y_train))
+y_test_predict_regularized_biased = np.dot(x_test_biased, w_regularized_biased)
+#print("RMSE_regularized_biased: ", rmse(y_test_predict_regularized_biased, y_test))
+
+## Bayesian linear regression model with the bias term
+w_Bayesian_biased = np.dot(np.linalg.inv(np.add(np.dot(x_transpose_biased,x_train_biased),alpha*Identity_biased)),np.dot(x_transpose_biased,y_train))
+y_test_predict_Bayesian_biased = np.dot(x_test_biased, w_Bayesian_biased)
+#print("RMSE_Bayesian_biased: ", rmse(y_test_predict_Bayesian_biased, y_test))
