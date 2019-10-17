@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 filename = 'train.csv'
 training_set_ratio = 0.8
@@ -62,14 +63,16 @@ x_test_biased = np.column_stack((np.ones(len(y_test)),x_test))
 ## linear regression model without the bias term
 w_linear = np.dot(np.linalg.pinv(x_train), y_train)
 y_test_predict_linear = np.dot(x_test, w_linear)
-#print("RMSE_linear: ", rmse(y_test_predict_linear, y_test))
+rmse_linear = rmse(y_test_predict_linear, y_test)
+#print("rmse_linear: ", rmse_linear)
 
 ## regularized linear regression model without the bias term
 x_transpose = x_train.transpose()
 Identity = np.identity(len(x_train[1,:]))
 w_regularized = np.dot(np.linalg.inv(np.add(np.dot(x_transpose,x_train),lambDa*Identity)),np.dot(x_transpose,y_train))
 y_test_predict_regularized = np.dot(x_test, w_regularized)
-#print("RMSE_regularized: ", rmse(y_test_predict_regularized, y_test))
+rmse_regularized = rmse(y_test_predict_regularized, y_test)
+#print("rmse_regularized: ", rmse_regularized)
 
 ## regularized linear regression model with the bias term
 x_transpose_biased = x_train_biased.transpose()
@@ -77,9 +80,34 @@ Identity_biased = np.identity(len(x_train_biased[1,:]))
 Identity_biased[0,0] = 0
 w_regularized_biased = np.dot(np.linalg.inv(np.add(np.dot(x_transpose_biased,x_train_biased),lambDa*Identity_biased)),np.dot(x_transpose_biased,y_train))
 y_test_predict_regularized_biased = np.dot(x_test_biased, w_regularized_biased)
-#print("RMSE_regularized_biased: ", rmse(y_test_predict_regularized_biased, y_test))
+rmse_regularized_biased = rmse(y_test_predict_regularized_biased, y_test)
+#print("rmse_regularized_biased: ", rmse_regularized_biased)
 
 ## Bayesian linear regression model with the bias term
 w_Bayesian_biased = np.dot(np.linalg.inv(np.add(np.dot(x_transpose_biased,x_train_biased),alpha*Identity_biased)),np.dot(x_transpose_biased,y_train))
 y_test_predict_Bayesian_biased = np.dot(x_test_biased, w_Bayesian_biased)
-#print("RMSE_Bayesian_biased: ", rmse(y_test_predict_Bayesian_biased, y_test))
+rmse_Bayesian_biased = rmse(y_test_predict_Bayesian_biased, y_test)
+#print("rmse_Bayesian_biased: ", alpha, rmse_Bayesian_biased)
+
+## set title
+plt.title('Regression result comparison')
+
+## set y-label
+plt.ylabel('Values')
+
+## set x-label
+plt.xlabel('Sample index')
+
+## plot G3
+Ground_Truth, = plt.plot(y_test)
+Linear_Regression, = plt.plot(y_test_predict_linear)
+Linear_Regression_reg, = plt.plot(y_test_predict_regularized)
+Linear_Regression_reg_b, = plt.plot(y_test_predict_regularized_biased)
+Bayesian_Linear_Regression, = plt.plot(y_test_predict_Bayesian_biased)
+
+## set legend
+plt.legend([Ground_Truth, Linear_Regression, Linear_Regression_reg, Linear_Regression_reg_b, Bayesian_Linear_Regression], \
+['Ground Truth', '(' + '%.2f' % rmse_linear + ') Linear Regression', '(' + '%.2f' % rmse_regularized + ') Linear Regression (reg)', \
+'(' + '%.2f' % rmse_regularized_biased + ') Linear Regression (r/b)', '(' + '%.2f' % rmse_Bayesian_biased + ') Bayesian Linear Regression'])
+
+plt.show()
